@@ -3,12 +3,6 @@ package main;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.nio.file.Paths;
-
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.apache.log4j.xml.DOMConfigurator;
 
 import analyze.Analysis;
 import analyze.Support;
@@ -17,14 +11,6 @@ import exceptions.OutOfNumberFormatException;
 import exceptions.WrongTypeException;
 
 public class Main {
-    static {
-        try {
-            new DOMConfigurator().doConfigure(Paths.get("context\\log4j.xml").toUri().toURL(), LogManager.getLoggerRepository());
-        } catch (MalformedURLException ex) {
-            ex.printStackTrace();
-        }
-    }
-    private static Logger logger = Logger.getLogger(Main.class);
 
     public static void main(String[] args) throws IOException, InterruptedException {
         BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
@@ -33,7 +19,6 @@ public class Main {
         do {
             input = buffer.readLine();
             input.trim();
-            logger.info(input);
             
             try {
                 if (input.equalsIgnoreCase("quit")) {
@@ -43,34 +28,35 @@ public class Main {
                         System.out.println(i);
                     }
                 } else {
-                    Analysis analysis = new Analysis(logger, input.toUpperCase());
+                    Analysis analysis = new Analysis(input.toUpperCase());
                     int result = 0;
                     if (analysis.isMatch()) {
                         result = analysis.getData().compute();
-                        logger.info("match: " + analysis.getInput());
                     } else {
-                        logger.info("no match: " + analysis.getInput());
-                        throw new WrongTypeException("Выражение вида: " + analysis.getInput() + " не является числовым либо удовлетворяющим условиям ввода.");
+                         throw new WrongTypeException("Выражение вида: " + analysis.getInput() + " не является числовым либо удовлетворяющим условиям ввода.");
                     }
                     System.out.println("Результат вычисления: " + result);
                 }
             } catch (WrongTypeException ex) {
-                logger.error("WrongTypeException: ", ex);
+                System.out.println("WrongTypeException: ");
+                ex.printStackTrace();
                 System.exit(1);
             } catch (OutOfNumberFormatException ex) {
-                logger.error("OutOfNumberFormatException: ", ex);
+                System.out.println("OutOfNumberFormatException: ");
+                ex.printStackTrace();
                 System.exit(2);
             } catch (NumberTypeMismatchException ex) {
-                logger.error("NumberTypeMismatchException: ", ex);
+                System.out.println("NumberTypeMismatchException: ");
+                ex.printStackTrace();
                 System.exit(3);
             } catch (SecurityException ex) {
-                logger.error("SecurityException: ", ex);
+                ex.printStackTrace();
             }
         } while (!input.equals("quit"));
         try {
             buffer.close();
         } catch (IOException ex) {
-            logger.error("IOException while trying to close buffer: ", ex);;
+            ex.printStackTrace();
         }
         System.out.println("Завершение программы.");
     }
